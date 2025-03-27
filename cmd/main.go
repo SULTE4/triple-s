@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"strings"
 
 	"triple-s/flags"
 	"triple-s/handlers"
@@ -26,41 +25,18 @@ func main() {
 	handlers.DirectoryPath = dir
 
 	mux := http.NewServeMux()
-	mux.Handle("/", &Router{})
+
+	mux.HandleFunc("PUT /{BucketName}", handlers.PutBucket)
+	mux.HandleFunc("GET /", handlers.GetBucket)
+	mux.HandleFunc("DELETE /{BucketName}", handlers.DeleteBucket)
+
+	mux.HandleFunc("PUT /{BucketName}/{ObjectName}", handlers.PutObject)
+	mux.HandleFunc("GET /{BucketName}/{ObjectName}", handlers.GetObject)
+	mux.HandleFunc("DELETE /{BucketName}/{ObjectName}", handlers.DeleteObject)
 
 	fmt.Printf("Server running on port %d with BaseDir %s\n", port, dir)
 
 	addr := ":" + strconv.Itoa(port)
 	err = http.ListenAndServe(addr, mux)
 	utils.ErrorPrinting(err)
-}
-
-type Router struct{}
-
-func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	pathParts := strings.Split(strings.TrimPrefix(req.URL.Path, "/"), "/")
-
-	switch len(pathParts) {
-	case 1:
-		switch req.Method {
-		case http.MethodGet:
-			handlers.GetBucket(w, req)
-		case http.MethodPut:
-			handlers.PutBucket(w, req)
-		case http.MethodDelete:
-			handlers.DeleteBucket(w, req)
-		}
-	case 2:
-		switch req.Method {
-		case http.MethodGet:
-			handlers.GetObject(w, req)
-		case http.MethodPut:
-			handlers.PutObject(w, req)
-		case http.MethodDelete:
-			handlers.DeleteObject(w, req)
-		}
-
-	default:
-		handlers.SendResponse(w, http.StatusMethodNotAllowed, "Method not allowed")
-	}
 }

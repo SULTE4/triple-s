@@ -26,7 +26,7 @@ func InitDirectory(path string) error {
 		return fmt.Errorf("invalid directory path: %s", path)
 	}
 
-	bannedDirNames := []string{"cmd", "handlers", "utils", "flags"}
+	bannedDirNames := []string{"cmd", "handlers", "utils", "flags", "metadata"}
 	for _, bannedDirName := range bannedDirNames {
 		if path == bannedDirName {
 			return fmt.Errorf("invalid directory path: %s", path)
@@ -73,32 +73,17 @@ func ValidateBucketName(bucketName string) error {
 }
 
 func RemoveCSV(filePath string) error {
-	file, err := os.Open(filePath)
-	if os.IsNotExist(err) {
-		return nil
-	} else if err != nil {
+	info, err := os.Stat(filePath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
 		return err
 	}
-	defer file.Close()
 
-	content := make([]byte, 1024)
-	n, err := file.Read(content)
-	if err != nil && err.Error() != "EOF" {
-		return err
+	if info.Size() == 0 {
+		return os.Remove(filePath)
 	}
-	if n == 0 || strings.TrimSpace(string(content)) == "" {
-
-		tempPath := filePath + ".tmp"
-		if err := os.Rename(filePath, tempPath); err != nil {
-			return err
-		}
-
-		err = os.Remove(tempPath)
-		if err != nil {
-			return err
-		}
-	}
-
 	return nil
 }
 
