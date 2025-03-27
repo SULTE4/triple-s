@@ -9,7 +9,6 @@ import (
 )
 
 func Flags() (int, string, error) {
-
 	tripleS := flag.NewFlagSet("triple-s", flag.ExitOnError)
 
 	port := tripleS.Int("port", 8080, "Port number")
