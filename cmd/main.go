@@ -5,8 +5,10 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 
 	"triple-s/flags"
+	"triple-s/handlers"
 	"triple-s/utils"
 )
 
@@ -18,31 +20,47 @@ func main() {
 		os.Exit(1)
 	}
 
-	// err = utils.InitDirectory(dir)
-	// utils.ErrorPrinting(err)
+	err = utils.InitDirectory(dir)
+	utils.ErrorPrinting(err)
 
-	http.HandleFunc("/", handleRequest)
+	handlers.DirectoryPath = dir
+
+	mux := http.NewServeMux()
+	mux.Handle("/", &Router{})
 
 	fmt.Printf("Server running on port %d with BaseDir %s\n", port, dir)
 
 	addr := ":" + strconv.Itoa(port)
-	err = http.ListenAndServe(addr, nil)
+	err = http.ListenAndServe(addr, mux)
 	utils.ErrorPrinting(err)
 }
 
-func handleRequest(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("-----------------------------------------------------------------------")
-	fmt.Println()
-	fmt.Println(w)
-	fmt.Println()
-	fmt.Println("-----------------------------------------------------------------------")
-	fmt.Println()
-	fmt.Println("Request method:", r.Method)
-	fmt.Println("Request URL:", r.URL.Path)
-	fmt.Println()
-	fmt.Println("-----------------------------------------------------------------------")
-	fmt.Println()
-	fmt.Fprintf(w, "Hello, %s!", r.URL.Path[1:])
-	fmt.Println()
-	fmt.Println()
+type Router struct{}
+
+func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	pathParts := strings.Split(strings.TrimPrefix(req.URL.Path, "/"), "/")
+
+	switch len(pathParts) {
+	case 1:
+		switch req.Method {
+		case http.MethodGet:
+			handlers.GetBucket(w, req)
+		case http.MethodPut:
+			handlers.PutBucket(w, req)
+		case http.MethodDelete:
+			handlers.DeleteBucket(w, req)
+		}
+	case 2:
+		switch req.Method {
+		case http.MethodGet:
+			handlers.GetObject(w, req)
+		case http.MethodPut:
+			handlers.PutObject(w, req)
+		case http.MethodDelete:
+			handlers.DeleteObject(w, req)
+		}
+
+	default:
+		handlers.SendResponse(w, http.StatusMethodNotAllowed, "Method not allowed")
+	}
 }
