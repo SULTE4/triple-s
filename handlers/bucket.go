@@ -66,6 +66,14 @@ func PutBucket(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetBucket(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	if r.URL.Path != "/" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
 	metadataFile := DirectoryPath + "/buckets.csv"
 
 	file, err := os.Open(metadataFile)
