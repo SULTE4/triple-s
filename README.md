@@ -22,13 +22,24 @@ Triple-S is a simplified S3-like object storage service that allows users to cre
 
 ---
 
-## **Directory Structure**
+## **Project Structure**
 ```
-BaseDir/                 # Root directory for buckets and objects
-│── my-bucket/           # Directory representing a bucket
-│   ├── file.txt        # Example object stored in the bucket
-│   ├── objects.csv     # Metadata for objects in the bucket
-│── buckets.csv          # Metadata for all buckets
+triple-s
+├── cmd
+│   └── main.go
+├── data
+│   └── buckets.csv
+├── flags
+│   └── flags.go
+├── go.mod
+├── handlers
+│   ├── bucket.go
+│   └── object.go
+├── metadata
+│   └── metadata.go
+├── README.md
+└── utils
+    └── utils.go
 ```
 
 ---
@@ -55,7 +66,7 @@ BaseDir/                 # Root directory for buckets and objects
 
 ### **1. Clone the Repository**
 ```bash
-git clone <repository-url>
+git clone git@github.com:SULTE4/triple-s.git
 cd triple-s
 ```
 
@@ -88,9 +99,3 @@ go build -o triple-s .
 | Internal server error          | `500`           | `Failed to perform operation`  |
 
 ---
-
-## **Future Enhancements**
-- **Pagination** for bucket and object listings.
-- **Object versioning** to maintain history of changes.
-- **Authentication** to secure the API.
-- **Batch operations** for handling multiple objects at once.
